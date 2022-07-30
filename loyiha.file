@@ -1,0 +1,18 @@
+# views -1
+#Company list (short data)
+#Company detail (with vacancy)
+#profile detail (with vacancy)
+#all vacancy
+# category vacancy
+#Vacancy detail
+
+
+# view-2
+# create, update, delete vacancy
+# create, update, delete company
+# create, update, delete  profile
+# create, delete apply
+
+# view-3
+# user applied list
+# vacancy applied list

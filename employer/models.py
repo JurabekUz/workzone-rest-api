@@ -1,48 +1,27 @@
 import datetime
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from model_choices import *
 
+User = get_user_model()
 class Category(models.Model):
     title = models.CharField(max_length=200)
-
-EmploymentForm = [
-    ('OF', 'In Office'),
-    ('ON', 'Remote'),
-    ('HY', 'Hybrid')
-]
-
-EmploymentType = [
-    ('FT', 'Full-Time'),
-    ('PT', 'Part-Time'),
-    ('FR', 'Freelance'),
-    ('CT', 'Contract'),
-    ('IN', 'Internship'),
-]
-
-SalaryType = [
-    ('HOUR', 'Hour'),
-    ('DAY', 'Day'),
-    ('MONTH', 'Month'),
-    ('HM', 'Half-Month'),
-    ('YEAR', 'Year')
-]
-
-Currency = [
-    ('UZS', 'UZS'),
-    ('RUB', 'RUB'),
-    ('USD', 'USD'),
-    ('EUR', 'EUR'),
-]
-
+    slug = models.SlugField(max_length=200)
 
 class Company(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='company')
     name = models.CharField(max_length=50)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    logo = models.ImageField(null=True)
     website = models.URLField(blank=True,null=True)
-    staffs = models.PositiveSmallIntegerField()
+    staffs_count = models.PositiveSmallIntegerField()
     address = models.CharField(max_length=150, blank=True, null=True)
     description = models.TextField()
+    #social network accounts
     telegram = models.URLField(blank=True,null=True)
     linkedin = models.URLField(blank=True,null=True)
     youtube = models.URLField(blank=True,null=True)
@@ -54,6 +33,15 @@ class Company(models.Model):
 
     def count_vacancy(self):
         return self.vacancy.count()
+
+    def clean(self):
+        if not self.user.is_employer:
+            raise ValidationError(
+                {'Error': "User is Empoler True bo'lishi kerak"})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 
 class Vacancy(models.Model):
@@ -102,3 +90,5 @@ class Applied(models.Model):
     user = models.ForeignKey(User,  on_delete=models.CASCADE, related_name='apply')
     message = models.CharField(max_length=512)
     applied_date = models.DateField(auto_now_add=True)
+    # apply status
+    status = models.CharField(max_length=2, choices=APPLY_STATUS, default='UR')
